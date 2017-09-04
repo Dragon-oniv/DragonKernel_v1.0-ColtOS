@@ -17,6 +17,9 @@
  * 11. Updated Shoaib's Core Control to v2.1 (AiO HotPlug's Dependency Removed).
  * 12. Updated Shoaib's Core Control to v2.2 (All Checks Removed for Thermal Table). 
  * 13. Updated Shoaib's Core Control to v2.4 (Core 0 Permission Toggle replaced with a Native one).
+ * 14. Disable Frequency/Thermal Functionality (only 1 Throttle Point is available now). 
+ * 15. Remove Temperature Step Functionality.
+ * 16. Updated Shoaib's Core Control v2.6 (Minor Improvements).
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -66,7 +69,11 @@ int LEVEL_HOT 		= _temp_threshold + _temp_step;
 
 #ifdef CONFIG_CORE_CONTROL
 // Essentials for Shoaib's Core Control.
-bool core_control = true;
+#if (NR_CPUS == 4)
+    bool core_control = false;
+#elif (NR_CPUS == 6 || NR_CPUS == 8)    
+      bool core_control = true;
+#endif
 static struct kobject *cc_kobj;
 #endif
 
@@ -564,8 +571,8 @@ static struct platform_driver msm_thermal_device_driver = {
 static int __init msm_thermal_device_init(void)
 {
 	#ifdef CONFIG_CORE_CONTROL
-	// Initialize Shoaib's Core Control Driver 
-	if (num_possible_cpus() > 1)
+	// Initialize Shoaib's Core Control Driver only for Quad-Core or Higher SoCs.
+	if (num_possible_cpus() >= 4)
 	   msm_thermal_add_cc_nodes();
 	#endif
 
